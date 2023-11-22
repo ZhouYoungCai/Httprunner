@@ -1,0 +1,29 @@
+1、GoReplay介绍
+    Gor，又称为GoReplay，是采用Golang 编写的一个开源的 HTTP 实时流量复制工具。
+	它只需要在 LB 或者 入口服务器上执行一个进程，就可以把生产环境的流量复制到任何地方，
+	比如 Staging 环境、Dev 环境。常用于压测及线上问题复现。
+	GoReplay是一个开源工具，用于捕获实时http流量并将其重播到测试环境中，
+	以便使用真实数据持续测试您的系统。
+	它可以用于增加对代码部署、配置更改和基础架构更改的信心。
+	GoReplay是一个开源的网络监控工具，可以记录您的实时流量，
+	并将其用于跟踪、负载测试，监控和详细分析。
+2、GoReplay价值
+    厌倦了生产调试？使用GoReplay准确模拟生产环境，使您的部署和基础架构更改可预测。
+	GoReplay是一种创新的开源解决方案，
+	它允许您捕获现有用户的活动并将其重新用于测试您的应用。使用GoReplay，
+	您可以执行跟踪、负载测试或者详细分析和监控
+3、下载
+    编译版本：https://github.com/buger/goreplay
+	预编译版本：https://github.com/buger/goreplay/releases  --推荐
+4、演练环境
+    可以利用gor python nginx等各种工具搭建多套环境
+	ython3 -m http.server 8001
+	./gor file-server:8000
+	dev环境：http://127.0.0.1:8001
+	stage环境:http://127.0.0.1:8002
+	prod环境:http://127.0.0.1:8000
+5、快速开始quick start
+    监听模式：
+	转发模式：
+	重放模式：
+	性能模式：

@@ -1,0 +1,162 @@
+文章链接：https://www.jianshu.com/p/bac7ced6872c
+1、目录
+	目标
+		结合应用案例，掌握HTTPRu v3的使用方法
+		掌握测试用例的录制生成与编写
+		启发测试框架开发的思路
+	项目背景
+	HTTPRunner基础
+	HTTPRunner快速上手
+	企业级应用案例实战
+	HTTPRunner的设计&实现
+2、项目背景
+	1.为什么要开发HTTPRunner
+		1.工具多&杂
+			接口测试工具
+			性能测试工具
+		2.学习成本高
+		3.团队协作难
+			风格迥异
+			整合困难
+			交接困难
+		4.维护成本高
+			接口变更一个，用例调整一堆
+			接口测试脚本和性能测试脚本独立维护
+		5.普遍结局
+			因投入产出比太低、维护跟不上而荒废
+	2.HTTPRunner的核心目标
+		1.提高投入产出比（ROI）- 任务拆解
+			少投入
+				工具开发&维护
+				功能多
+				质量高
+				学习使用成本
+				编写&调试测试用例
+				管理&维护测试用例
+			高收益
+				实现接口功能测试
+				性能测试脚本复用
+				兼具持续集成、线上监控
+				辅助手工测试：自定义生成特定业务数据
+				快速定位问题
+		2.自动化测试核心指标 - If you cannot measure it, you cannot improve it.
+			1.测试用例数：越多越好
+			编写、调试效率
+			管理、维护成本
+			学习成本、上手难度
+			2.执行频率：越快越好
+				运行便捷性
+					IDE
+					命令行
+					平台
+					Jenkins/CI
+				运行效率
+					分布式
+					并行
+				运行成功率：越高越好
+					框架稳定性
+					用例稳定性
+						数据依赖
+						hook机制
+							setup
+							teardown
+		3.功能强大 & 简单易用
+			功能全面，主流接口测试工具有的功能都得有
+			使用流畅，用户的心情十分重要
+			运行稳定，测试工具必须要比被测系统更健壮
+3、HTTPRunner基础
+	HttpRunner是什么?
+		1.面向HTTP(S)协议的通用测试框架
+		2.只需编写维护一份 YAML/JSON/Pytest 脚本，即可实现自动化测试、性能测试、线上监控、持续集成等多种测试需求
+		3.约定大于配置
+		4.一站式接口测试解决方案，不只局限于HTTP(S)
+	HttpRunner v3新特性
+		1.整体：概念更简单、功能更易用、生态更强大
+		2.pydantic类型系统
+			https://pydantic-docs.helpmanual.io/
+			替换 jsonschema
+			思想来源于 golang 的 struct
+		3.集成pytest
+			allure
+			fixture hooks
+			parameters
+			etc.可充分复用pytest的众多生态插件
+		4.生成pytest用例
+			jinjia2模板生成
+			black格式化为标准pep8
+		5.内置http web server
+			fastapi
+			更加易于进行二次开发、平台化
+		6.测试用例编写语法提示
+			链式调用，智能语法提示
+			rest-assured
+			PyCharm IDE错误提示
+	HttpRunner核心概念
+		1.测试用例概念
+			https://en.wikipedia.org/wiki/Test_case
+			相对独立
+			核心要素
+		2.测试用例组织结构
+			image.png
+			测试用例：有序的步骤集合
+			测试用例集：无序的测试用例集合
+			去除API、testsuite
+			一切皆testcase
+		3.测试用例格式
+			schema: config/teststeps
+			image.png
+			https://github.com/httprunner/httprunner/blob/master/httprunner/models.py
+			示例
+			https://github.com/httprunner/httprunner/tree/master/examples/
+			debugtalk.py
+			项目根目录(锚点)
+			实现动态运算
+	项目地址
+		GitHub仓库
+			https://github.com/httprunner/httprunner
+		用户文档v3
+			https://docs.httprunner.org/
+	环境准备
+		1.Python环境
+			支持 3.6/3.7/3.8
+		2.venv虚拟环境
+			python3 -m venv ~/.venv/hogwarts
+			source ~/.venv/hogwarts/bin/activate
+		3.安装HttpRunner
+			pip install httprunner
+		4.环境验证
+			httprunner -V
+			httprunner -h
+			image.png
+			子命令
+			hrun -h
+			har2case -h
+			hmake -h
+		5.脚手架生成项目
+			httprunner startproject demo
+			目录结构
+			image.png
+			运行demo
+			hrun demo /testcases/
+			image.png
+4、HttpRunner快速上手
+	案例：幕布登录场景
+	脚本录制
+		Charles / Fiddler /Chrome抓包生成HAR文件
+	脚本生成
+		HAR
+			https://w3c.github.io/web-performance/specs/HAR/Overview.html
+		har2case：将HAR转换为YAML/JSON脚本
+			$ har2case x.har # pytest...
+		make：将YAML/JSON转换为pytest脚本
+	执行脚本
+		hrun xxx.yml
+		hrun xxx.json
+		等价于
+			hmake xxx.yml
+			pytest xxx_test.py
+	查看运行结果 & 报告
+		默认安装了pytest-html插件
+		hrun testcases/mubu.login.yml --html=reports/mubu.login.html
+		open reports/mubu.login.html
+	

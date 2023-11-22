@@ -1,0 +1,199 @@
+文章链接：https://www.jianshu.com/p/c4b10e60ebdc
+一、企业级应用案例实践
+	案例介绍
+		1.代码地址：https://github.com/debugtalk/hogwarts-20201017
+		2.案例网址：https://mubu.com/
+		3.教学文档链接： https://share.mubu.com/doc/1zS4oM3xcxs 密码：hogwarts
+		3.教学文档链接： https://share.mubu.com/doc/2FBfG57sPS3 密码: p35v
+		4.初始化项目：
+			httprunner startproject insaneloafer
+				(venv) D:\Programs\DevOps\pythonProject>httprunner startproject insaneloafer
+				2021-05-30 15:26:45.667 | INFO     | httprunner.scaffold:create_scaffold:43 - Create new project: insaneloafer
+				Project Root Dir: D:\Programs\DevOps\pythonProject\insaneloafer
+				created folder: insaneloafer
+				created folder: insaneloafer\har
+				created folder: insaneloafer\testcases
+				created folder: insaneloafer\reports
+				created file: insaneloafer\testcases\demo_testcase_request.yml
+				created file: insaneloafer\testcases\demo_testcase_ref.yml
+				created file: insaneloafer\debugtalk.py
+				created file: insaneloafer\.env
+				created file: insaneloafer\.gitignore
+				$ tree insaneloafer -a
+				2021-05-30 15:26:45.682 | WARNING  | httprunner.scaffold:show_tree:29 - tree command not exists, ignore.
+				Sentry is attempting to send 0 pending error messages
+				Waiting up to 2 seconds
+				Press Ctrl-Break to quit
+		5.上传项目到GitHub
+			git status 查看是否为GitHub的仓库
+			git init 将当前项目创建为GitHub的仓库
+			git add . 将当前项目添加到GitHub仓库
+			git commit -m "initialize project" 提交
+	进行抓包
+		访问：https://mubu.com/
+		点击登录
+		登录后点击创建文档
+		文档内容输入Demo
+		在Charles中过滤静态api，过滤器里输入：mubu.com/assert，然后将assert删除
+		image.png
+		选中所有接口，右键点击Export Session
+		image.png
+		导出格式选中.har，将其导出到项目的har目录下
+		image.png
+		image.png
+		在gitignore 文件中添加.idea 一行，并上传录制文档到GitHub
+		image.png
+		git add har/Insane.har进行添加`
+		git commit -m "录制生成HAR文件" 进行提交
+		image.png
+		生成用例：har2case har/Insane.har，默认生成pytest格式。-2y 可以生成yaml格式，-2j 可以生成json格式
+		image.png
+		将生成好的用例以及__init__.py文件移动到testcase目录下
+		image.png
+		运行脚本，查看结果，发现创建的为无标题的文档，结果与预期不符
+		image.png
+		image.png
+		排查问题是由于创建的文档id与其下所编辑的文档id未做关联
+	进行参数关联
+		参数提取方式：
+		body.xxx，从响应体中提取关联参数，后面跟jmespath路径
+		headers.xxx，从headers中提取关联参数
+		cookies.xxx，从cookies中提取关联参数
+		jmespath定位：https://jmespath.org/
+		定位列表用[number]
+		定位字典用 .
+		示例
+		image.png
+		image.png
+		如果所定位的字段有特殊符号会提示不符合jmespath格式，此时将有特殊符号的字段使用引号引起来便可
+		image.png
+		在测试用例中实现
+		调用.extract()
+		再调用.with_jmespath("body.data.id", "docID")
+		image.png
+		将所有的docID进行替换，替换格式${docID}
+		image.png
+		再次运行用例，发现用例通过
+		image.png
+		设置userId关联
+		userID首次出现位置为
+		image.png
+		设置关联
+		image.png
+		image.png
+	设置全局变量
+		在config 后面加入.variables(**{"key":"value"})
+		然后将所有的数据替换为变量
+		image.png
+	设置base_url
+		在config后加上.base_url("url")
+		image.png
+		将其他接口的base_url全部去掉
+		image.png
+	设置host全局变量
+		在config的.variables() 中加入host 全局变量，并进行全局替换
+		image.png
+	设置电话号码、密码为全局变量
+		在config的.variables() 中加入phone和password 全局变量，并进行全局替换
+		image.png
+	设置单接口的局部变量
+		在Step(RunRequest(xxx))后加上.with_variables(**{"key": "value"})，然后对变量进行替换
+		image.png
+	增加断言
+		同样适用jmespath获取内容进行断言，在结果后面添加断言语句.assert_xxx()即可
+		image.png
+		更多的校验方式：
+		.assert_length_greater_than("body.data.folders", 5)
+	实现teardown
+		在step后加入.teardown_hook("${sleep(2)}")，其中括号里为自定义或框架自带的函数。这里实在接口运行完后sleep两秒
+		image.png
+		加载文档列表后，获取 folders 数量并赋值给 folders_num
+		在debugtalk.py 文件中定义函数get_folders_num，其中response 为内置变量，返回接口响应结果
+		image.png
+		在获取文档列表接口后加入.teardown_hook("${get_folders_num($response)}", "folder_num")
+		image.png
+		运行结果
+		image.png
+		修改函数
+		image.png
+		修改后的运行结果
+		image.png
+		再次修改函数，返回folders数量
+		image.png
+		再次运行，可以发现运行结果存储到变量folders_num中
+		image.png
+		此时便可在step中进行调用
+		image.png
+		替换user-agent 为HTTPRunner的版本，表示接口使用HTTPRunner运行的
+		image.png
+	实现签名算法
+		在debugtalk.py 文件中定义实现md5加密的获取token函数
+		image.png
+		在测试用例对应位置加入函数
+		image.png
+	设置文档的全局标题
+		在debugtalk.py 文件中加入以下函数
+		def get_random_title():
+			return f"demo-{random.randint(1, 99999)}"
+		在测试用例对应位置加入函数
+		image.png
+	测试用例分层运行
+		在testcase目录下创建login_test.py 文件，将于login相关的代码拷贝进去
+		image.png
+		在insane_test.py 中运行login测试用例，运行的格式参考：
+		运行hmake testcases/demo_testcase_ref.yml，生成demo文件
+		image.png
+		拷贝demo文件的导入命令至insane_test.py 中
+		image.png
+		然后在teststeps列表中加入登录的用例：
+		image.png
+	导出测试用例的参数给其余用例使用
+		在测试用例的config中加入.export("xxx")
+		image.png
+		在另一个用例中进行导入
+		image.png
+	测试用例相互独立运行
+		hrun testcases/login_test.py testcases/insane_test.py
+		image.png
+	参数化数据驱动
+		直接制定参数列表
+		在yaml格式的测试用例中加入parameters字典即可
+		image.png
+		使用hmake testcases/demo_testcase_request.yml生成对应的python文件，发现此文件多出引用数据驱动的代码
+		image.png
+		运行用例，发现运行了四次
+		image.png
+		引用函数生成参数列表
+		debugtalk.py 中创建批量生成文档名函数
+		image.png
+		在测试用例中调用
+		image.png
+		再次运行，发现运行了指定次数
+		image.png
+		引用CSV 文件
+		创建csv文件，第一行为变量名
+		image.png
+		在用例中进行引用，多个变量用- 隔开
+		image.png
+二、查看报告
+	默认 pytest-html 报告形式
+		hrun har/login.yml --html=login.html
+	allure 报告
+		安装 allure 插件
+			pip install "httprunner[allure]"
+			或者单独安装：pip install allure-pytest
+	运行
+		hrun testcases --alluredir=allurereports/
+		allure serve allurereports
+		image.png
+三、性能测试
+		安装插件
+			pip install "httprunner[locust]"
+			或者 pip install locust
+		运行
+			locusts -f testcases/mubu_login_[test.py]
+		拓展
+			https://github.com/myzhan/boomer
+			image.png
+			image.png
+	
